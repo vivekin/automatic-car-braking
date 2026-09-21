@@ -1,0 +1,100 @@
+const int modesw = A3;
+const int trigPin = 7;
+const int echoPin = 6;
+const int headlgt = 4;
+const int taillgt = 5;
+int m;
+long duration,cm;
+
+const int analogInPin = A0;
+const int analogOutPin = 9;
+const int in1 = 12;
+const int in2 = 13;
+int safespd;
+int sensorValue = 0;
+int outputValue = 0;
+void setup() 
+{
+  pinMode(headlgt, OUTPUT);
+  pinMode(taillgt, OUTPUT);
+  digitalWrite(headlgt,HIGH); 
+    
+  pinMode(echoPin, INPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(modesw,INPUT);
+  
+  pinMode(analogInPin, INPUT);
+  pinMode(analogOutPin, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+}
+void loop() 
+{
+ m=digitalRead(modesw);
+ if(m==0)
+ {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  sensorValue = analogRead(analogInPin);
+  outputValue = map(sensorValue, 0, 1023, 0, 255);  
+  analogWrite(analogOutPin, outputValue); 
+ }
+ else if(m==1)
+ {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+ 
+  duration = pulseIn(echoPin, HIGH);
+  cm = microsecondsToCentimeters(duration);
+
+
+  if(cm<20)
+  {
+   rept:
+   digitalWrite(in1, LOW);
+   digitalWrite(in2, LOW);
+   analogWrite(analogOutPin, 255);
+   digitalWrite(taillgt,HIGH); 
+   goto rept;
+  }
+  else if(cm<100)
+  {
+   safespd=50;
+   
+  }
+  else if(cm<170)
+  {
+   safespd=100;
+  }
+  else if(cm<200)
+  {
+   safespd=150;
+  }
+  else if(cm<250)
+  {
+   safespd=180;
+  }
+  else if(cm<300)
+  {
+   safespd=225;
+  }
+  else
+  {
+   safespd=255;
+  }
+  sensorValue = analogRead(analogInPin);
+  outputValue = map(sensorValue, 0, 1023, 0, safespd); 
+  analogWrite(analogOutPin, outputValue);    
+ }
+ delay(50);
+}
+long microsecondsToCentimeters(long microseconds)
+{
+return microseconds / 29 / 2;
+}
